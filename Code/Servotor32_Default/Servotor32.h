@@ -59,7 +59,7 @@ public:
      *
      ***********************************************************************
      */
-    long unsigned int micros_new();
+    long unsigned int micros_new() const;
 
     /**
      * @brief Replacement for the standard "millis" method.
@@ -68,7 +68,7 @@ public:
      *
      ***********************************************************************
      */
-    long unsigned int millis_new();
+    long unsigned int millis_new() const;
 
     /**
      * @brief Replacement for the standard "delay" method.
@@ -77,7 +77,7 @@ public:
      *
      ***********************************************************************
      */
-    void delay_ms(long unsigned int delay_time);
+    void delay_ms(long unsigned int delay_time) const;
 
     /**
      * @brief Replacement for the standard "delayMicroseconds" method.
@@ -86,7 +86,7 @@ public:
      *
      ***********************************************************************
      */
-    void delay_us(long unsigned int delay_time);
+    void delay_us(long unsigned int delay_time) const;
     /** @} */ // end Time group
 
     /**
@@ -107,7 +107,7 @@ public:
      *
      ***********************************************************************
      */
-    void printStatus(Stream* serial);
+    void printStatus(Stream* serial) const;
   
     /**
      * @brief Checks serial stream for available input and processes a
@@ -118,6 +118,20 @@ public:
      *
      *  * Display the firmware version number with 'V'
      *
+     *  * Set the multiPing() attempt count with '#[count]m'
+     *    + Display current miltiPing() attempt count with 'm'
+     *
+     *  * Set the arcPing() point count with '#[count]s'
+     *    + Display current arcPing() point count with 's'
+     *
+     *  * Make a multiPing() measurement with 'M'
+     *
+     *  * Make an arcPing() with 'S'
+     *
+     *  * Display current milli-seconds since boot with 't'
+     *
+     *  * Print icky debug details with 'D'
+     *
      *  * Center all servos with 'C'
      *
      *  * Kill all servos with 'K'
@@ -125,9 +139,9 @@ public:
      *  * Kill a single servo with '#[servo number]L'
      *
      *  * Move a single servo with '#[servo Number]P[Servo Position]'. Must
-     *    be followed by either carrage-return or line-feed.  Both is okay.
+     *    be followed by ';', carrage-return or line-feed.  Both/all is okay.
      *
-     *  * Print icky debug details with 'D'
+     *  Servo number must be in the range 0..31
      *
      *  Servo position value must be in the range of 500..2500
      *  based on the following:
@@ -136,11 +150,11 @@ public:
      *  * 1500 = 0 degrees, center  
      *  * 2500 = 90 degrees Right  
      *
-     * @param stream Pointer to stream to check for input.
+     * @param serial Pointer to Stream to check for input.
      *
      ***********************************************************************
      */
-    void process(Stream* stream);
+    void process(Stream* serial);
 
     /**
      * @defgroup Sonar Sonar access methods
@@ -172,6 +186,24 @@ public:
      ***********************************************************************
      */
     float multiPing(unsigned short attempts);
+
+    /**
+     * @brief Obtain a median sonar reading at a number of points along a
+     * 180 degree arc.
+     *
+     * This method will calls {@link multiPing(unsigned short) multiPing()}
+     * with the currently set number of "attempts" at a number of points
+     * along a 180 degree arc, including both ends.  The number of points is
+     * also configurable and the default number is 9.
+     *
+     * Each multiPing() result is pirinted to the give serial Stream.
+     *
+     * @param serial Pointer to Stream to print results out to.
+     *
+     ***********************************************************************
+     */
+    void arcPing(Stream* serial);
+
     /** @} */ // end Sonar group
 
 private:
@@ -187,7 +219,6 @@ private:
      ***********************************************************************
      */
     static void callback();
-    short tallyCount();
 };
 
 #endif
