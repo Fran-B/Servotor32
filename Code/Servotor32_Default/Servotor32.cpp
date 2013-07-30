@@ -26,7 +26,7 @@
 /// Default number of measurement locations in 180 degree arc-ping scan
 #define DEFAULT_SCAN_PING_CNT 9
 /// Maximum number of measurement locations in 180 degree arc-ping scan
-#define MAX_SCAN_PING_CNT (MAX_POS - MIN_POS)
+#define MAX_SCAN_PING_CNT (((MAX_POS - MIN_POS) / 10) + 1)
 /// Maximum number of pings for multi-ping
 #define MAX_MULTI_PING_CNT 64
 
@@ -190,15 +190,6 @@ void Servotor32::add_to_sorted_array(byte servo, byte group, signed short pos){
   }
   active_servos_hex[group] |= pin_2_num[servo-group*SERVOS_PER_GROUP];
   servos_active_in_group[group] += 1;
-}
-
-/// wait for the servos to stop pulsing before updating the timing arrays
-void waitForServoPosition()
-{
-    while (update_reg_flag == 0)
-    {
-        delayMicroseconds(10);
-    }
 }
 
 void Servotor32::update_registers_fast(byte servo, signed short pos){
@@ -681,19 +672,24 @@ float Servotor32::multiPing(unsigned short attempts=DEFAULT_MULTI_PING_CNT){
 void Servotor32::arcPing(Stream* serial) {
 
     float step = ((float)(MAX_POS - MIN_POS)) / (arcScanPingCnt - 1);
+    /*
+     * It takes about 500 mSec for full swing travel, so we start with a compromise of 300.
+     * 
+     * At each step we only need enough delay for that fraction of full travel.
+     * We add one as a round-up and to guard against the integer division returning zero.
+     */
+    long unsigned int mSecDelay = 300;
+    long unsigned int stepDelay = ((500 / arcScanPingCnt) + 1);
 
     for (int i = 0; i < arcScanPingCnt; i++)
     {
         int pos = ((int)(step * i)) + MIN_POS;
         changeServo(PING_SERVO, pos);
-        if (i == 0)
-        {
-            delay_ms(300);
-        }
-        else
-        {
-            delay_ms(500 / arcScanPingCnt);
-        }
+
+        delay_ms(mSecDelay);
+
+        mSecDelay = stepDelay;
+
         float d = multiPing(multiPingCnt);
         serial->println(d);
     }
