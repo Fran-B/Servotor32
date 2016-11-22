@@ -578,6 +578,13 @@ void Servotor32::process(Stream *serial) {
 
 #define MAX_TIME 1000000
 
+/// Ping pulse in progress wait timed-out
+#define PPIP_TIMED_OUT -1.0
+/// Ping pulse start (begin) wait timed-out
+#define PPBW_TIMED_OUT -2.0
+/// Ping  pulse stop (end) wait timed-out
+#define PPEW_TIMED_OUT -3.0
+
 float Servotor32::ping(){
   //PB0 for Trigger (17)
   //PB7 for Echo (11)
@@ -610,21 +617,24 @@ float Servotor32::ping(){
   // wait for any previous pulse to end
   while ((*portInputRegister(port) & bit) == stateMask)
     if (numloops++ == maxloops)
-      return 0;
+        //return 0;
+      return PPIP_TIMED_OUT;
 
   // wait for the pulse to start
   while ((*portInputRegister(port) & bit) != stateMask)
     if (numloops++ == maxloops)
-      return 0;
+        //return 0;
+        return PPBW_TIMED_OUT;
 
   startCount = micros_new();
   // wait for the pulse to stop
   while ((*portInputRegister(port) & bit) == stateMask) {
     if (numloops++ == maxloops)
-      return 0;
+        //return 0;
+      return PPEW_TIMED_OUT;
     delayMicroseconds(10); //loop 'jams' without this
     if((micros_new() - startCount) > 58000 ){ // 58000 = 1000CM
-      return 0;
+        //return 0;
       break;
     }
   }

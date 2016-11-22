@@ -73,7 +73,8 @@ public:
     /**
      * @brief Replacement for the standard "delay" method.
      *
-     * @param delay_time "long unsigned int" number of milli-seconds to delay.
+     * @param delay_time "long unsigned int" number of milli-seconds to
+     *      delay.
      *
      ***********************************************************************
      */
@@ -82,7 +83,8 @@ public:
     /**
      * @brief Replacement for the standard "delayMicroseconds" method.
      *
-     * @param delay_time "long unsigned int" number of micro-seconds to delay.
+     * @param delay_time "long unsigned int" number of micro-seconds to
+     *      delay.
      *
      ***********************************************************************
      */
